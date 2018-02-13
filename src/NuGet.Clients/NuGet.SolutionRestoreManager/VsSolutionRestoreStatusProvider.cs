@@ -35,7 +35,6 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public async Task<bool> IsRestoreCompleteAsync(CancellationToken token)
         {
-            var worker = (SolutionRestoreWorker)_restoreWorker.Value;
             var complete = true;
 
             // Check if the solution is open, if there are no projects then consider it restored.
@@ -54,7 +53,7 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 // Check if the restore worker is currently active.
-                complete &= worker.IsRunning;
+                complete &= _restoreWorker.Value.IsRunning;
             }
 
             return complete;

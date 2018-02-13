@@ -4,6 +4,8 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
@@ -12,6 +14,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Console.TestContract;
 using NuGet.PackageManagement.UI.TestContract;
+using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio;
 
 namespace NuGet.Tests.Apex
@@ -38,6 +41,12 @@ namespace NuGet.Tests.Apex
         /// </summary>
         protected internal IVsPackageInstaller PackageInstaller => VisualStudioObjectProviders.GetComponentModelService<IVsPackageInstaller>();
 
+        /// <summary>
+        /// Gets the NuGet IVsSolutionRestoreStatusProvider
+        /// </summary>
+        protected internal IVsSolutionRestoreStatusProvider SolutionRestoreStatusProvider
+            => VisualStudioObjectProviders.GetComponentModelService<IVsSolutionRestoreStatusProvider>();
+
         protected internal DTE Dte => VisualStudioObjectProviders.DTE;
 
 
@@ -47,6 +56,32 @@ namespace NuGet.Tests.Apex
         protected internal IVsPackageUninstaller PackageUninstaller => VisualStudioObjectProviders.GetComponentModelService<IVsPackageUninstaller>();
 
         protected internal IVsUIShell UIShell => VisualStudioObjectProviders.GetService<SVsUIShell, IVsUIShell>();
+
+        /// <summary>
+        /// Wait for all nominations and auto restore to complete.
+        /// </summary>
+        public void WaitForAutoRestore()
+        {
+            var timer = Stopwatch.StartNew();
+            var complete = false;
+            var timeout = TimeSpan.FromMinutes(5);
+
+            while (!complete && timer.Elapsed < timeout)
+            {
+                complete = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                    () => SolutionRestoreStatusProvider.IsRestoreCompleteAsync(CancellationToken.None));
+
+                if (!complete)
+                {
+                    System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(300));
+                }
+            }
+
+            if (!complete)
+            {
+                throw new System.TimeoutException($"Restore did not complete in {timeout}");
+            }
+        }
 
         /// <summary>
         /// Installs the specified NuGet package into the specified project

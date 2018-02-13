@@ -75,7 +75,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// True if any operation is running, pending, or waiting.
         /// </summary>
-        internal bool IsRunning => !_isCompleteEvent.IsSet;
+        public bool IsRunning => !_isCompleteEvent.IsSet;
 
         public JoinableTaskFactory JoinableTaskFactory => _joinableFactory;
 
