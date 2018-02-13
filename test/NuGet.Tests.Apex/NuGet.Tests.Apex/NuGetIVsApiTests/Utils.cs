@@ -50,6 +50,8 @@ namespace NuGet.Tests.Apex
 
         public static void AssertPackageIsInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
         {
+            testService.WaitForAutoRestore();
+
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
             if (File.Exists(assetsFilePath))
             {
@@ -64,6 +66,8 @@ namespace NuGet.Tests.Apex
 
         public static void AssertPackageIsNotInstalled(NuGetApexTestService testService, ProjectTestExtension project, string packageName, string packageVersion)
         {
+            testService.WaitForAutoRestore();
+
             var assetsFilePath = GetAssetsFilePath(project.FullPath);
             if (File.Exists(assetsFilePath))
             {

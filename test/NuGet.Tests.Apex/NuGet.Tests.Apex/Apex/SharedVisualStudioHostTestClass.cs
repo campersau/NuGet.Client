@@ -59,6 +59,7 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
             var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
+            nugetTestService.WaitForAutoRestore();
 
             return nugetConsole;
         }
